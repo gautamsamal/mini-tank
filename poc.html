@@ -1,0 +1,104 @@
+<html>
+
+<body>
+    <canvas id="canvas" width=600 height=600 style="border: 1px grey solid"></canvas>
+    <button onclick="increasePower();">Increase power</button>
+    <button>Increase angle</button>
+    <span id="angle"></span>
+    <span id="power"></span>
+    <span id="intersection"></span>
+    <script type="text/javascript">
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const k = 200 || canvas.width / 2;
+        const m = 200 || canvas.height / 2;
+
+
+        function getP(x, y) {
+            // We assumed coordinates of 20
+            return [k + (x / 20 * 600), m - (y / 20 * 600)];
+        }
+
+        /**
+         * y = y0 + Vy0*t - 1/2 g(t*t) : g = gravity
+         * x = x0 + Vx0*t + 1/2 a(t*t) : a = acceleration
+         * Assumed x0 = y0 = 0 && g = a = 0
+         * Then in quadratic eq.
+         * a = -g/2*Vx*Vx
+         * b = Vy/Vx
+         * If Vx = Vy, angle  = 45
+         * V = SQURT(Vx^2+Vy^2)
+         * */
+        //Experimental
+        let Vx = 1;
+        let Vy = 1;
+        let b = Vy / Vx;
+        let a = -1 / (2 * Vx * Vx);
+
+        alert(Math.atan(Vy / Vx) * 180 / Math.PI);
+
+
+        // let b = 1; //directly proportional to angle
+        // let a = -1 / 4; // inversely proportional to power
+        // on increase of b, decrease a to maintain hit.
+        const ratio = b * a;
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.moveTo(0, m);
+            ctx.lineTo(canvas.width, m);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(k, 0);
+            ctx.lineTo(k, canvas.height);
+            ctx.stroke();
+
+            for (let l = -10; l < 10; l = l + 0.01) {
+                const y = a * (l * l) + b * l;
+                if (l === -10) {
+                    ctx.beginPath();
+                    ctx.moveTo(...getP(l, y));
+                } else {
+                    ctx.lineTo(...getP(l, y));
+                }
+
+            }
+            ctx.stroke();
+        }
+
+        function dotP(v1, v2) {
+            return v1[0] * v2[0] + v1[1] * v2[1];
+        }
+
+        function _findAngle() { //dodo by velocity
+            const x = 0.00001;
+            const v1 = [x, 0];
+            const y = a * (x * x) + b * x;
+            const v2 = [x, y];
+
+            const cosT = dotP(v1, v2) / (Math.sqrt(dotP(v1, v1)) * Math.sqrt(dotP(v2, v2)));
+            return Math.acos(cosT) * 180 / Math.PI;
+        }
+
+        function increasePower() {
+            // b = 10;
+            a -= 0.5;
+            // a = b/ratio; //Calibrate
+            Refresh();
+            draw();
+        }
+
+        function Refresh() {
+            document.getElementById('intersection').innerHTML = `Hits : ${(-b / (2 * a)) * 2}`;
+            document.getElementById('angle').innerHTML = 'Angle : ' + parseFloat(_findAngle()).toFixed(3);
+            document.getElementById('power').innerHTML = `Power(a), Angle(b) : ${a},${b}`;
+        }
+        Refresh();
+        draw();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,61 @@
+<html>
+
+<body>
+    <h1>Hello</h1>
+    <canvas id="canvas" width=600 height=600 style="border: 1px grey solid"></canvas>
+
+    <script src="./assets/perlin.js"></script>
+    <script>
+        const seed = Math.random();
+        noise.seed(0.9);
+        // for (let i = 0; i < 600; i++) {
+        //     console.log(Math.min(i, 300, 600 - i) + (seed * noise.simplex2(i, i)));
+        // }
+
+        const yOffset = 100;
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        var random = function (low, high) {
+            if (high === undefined) {
+                high = low;
+                low = 0;
+            }
+            return Math.random() * (high - low) + low;
+        };
+        var noiseElevation = random(1, 50);
+        var spikiness = random(60, 85);
+        function clip(v, a1, b1, a2, b2) {
+            return (((v - a1) / (b1 - a1)) * (b2 - a2) + a2);
+        }
+
+        function calculateY(x) {
+
+            return -1 * (x * x) + 1 * x;
+        }
+        function draw(x = 0) {
+            const y = clip(calculateY(x / 600), 0, calculateY(0.5), 0, 200) + clip(noise.simplex2(x / spikiness, noiseElevation), -1, 1, 0, 50);
+            // const y = clip(noise.simplex2(x / spikiness, noiseElevation), -1, 1, 10, 50);
+            console.log(Math.min(x, 300, 600 - x), clip(calculateY(x / 600), 0, calculateY(0.5), 0, 300));
+            if (x === 0) {
+                ctx.beginPath();
+                ctx.moveTo(0, 600);
+                ctx.lineTo(x, 600 - y);
+            } else {
+                ctx.lineTo(x, 600 - y);
+            }
+
+            if (x < 600) {
+                draw(++x);
+            } else {
+                ctx.lineTo(600, 600);
+                ctx.fillStyle = '#f00';
+                ctx.fill();
+            }
+        }
+
+        draw();
+        ctx.stroke();
+    </script>
+</body>
+
+</html>
